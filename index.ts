@@ -9,9 +9,15 @@ function makeClient(endpoint: string): PolkadotClient {
     return client;
 }
 
+async function printChainInfo(client: PolkadotClient) {
+    const chainSpec = await client.getChainSpecData();
+    const finalizedBlock = await client.getFinalizedBlock();
+    console.log(`Connected to ${chainSpec.name} at block ${finalizedBlock.number}.`);
+}
+
 async function main() {
     const polkadotClient = makeClient("wss://rpc.polkadot.io");
-    console.log({ polkadotClient });
+    await printChainInfo(polkadotClient);
 
     console.log(`Done!`);
     process.exit(0);
