@@ -1,7 +1,7 @@
 import process from "node:process";
 import { getWsProvider } from "polkadot-api/ws-provider/web";
 import { createClient, type PolkadotClient, type SS58String, } from "polkadot-api";
-import { dot, people } from "@polkadot-api/descriptors";
+import { dot, people, collectives } from "@polkadot-api/descriptors";
 
 function makeClient(endpoint: string): PolkadotClient {
     console.log(`Connecting to endpoint: ${endpoint}`);
@@ -29,6 +29,20 @@ async function getDisplayName(peopleClient: PolkadotClient, address: SS58String)
     const accountInfo = await peopleApi.query.Identity.IdentityOf.getValue(address);
     const displayName = accountInfo?.[0].info.display.value?.asText();
     return displayName;
+}
+
+interface FellowshipMember {
+    address: SS58String;
+    rank: number;
+}
+  
+async function getFellowshipMembers(collectivesClient: PolkadotClient): Promise<FellowshipMember[]> {
+    const collectivesApi = collectivesClient.getTypedApi(collectives);
+    const rawMembers = await collectivesApi.query.FellowshipCollective.Members.getEntries();
+    const fellowshipMembers = rawMembers.map((m) => {
+        return { address: m.keyArgs[0], rank: m.value };
+    });
+    return fellowshipMembers;
 }
 
 async function main() {
