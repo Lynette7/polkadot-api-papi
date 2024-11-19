@@ -52,10 +52,21 @@ async function main() {
     const peopleClient = makeClient("wss://polkadot-people-rpc.polkadot.io");
     await printChainInfo(peopleClient);
 
-    const address = "15DCZocYEM2ThYCAj22QE4QENRvUNVrDtoLBVbCm5x4EQncr";
-    const balance = await getBalance(polkadotClient, address);
-    const displayName = await getDisplayName(peopleClient, address);
-    console.log(`Balance of ${displayName} whose address is ${address} is ${balance}.`);
+    const collectivesClient = makeClient("wss://polkadot-collectives-rpc.polkadot.io");
+    await printChainInfo(collectivesClient);
+
+    const members = await getFellowshipMembers(collectivesClient);
+
+    console.log("Generating table...");
+    const table = [];
+    for (const { address, rank } of members) {
+        const balance = await getBalance(polkadotClient, address);
+        const displayName = await getDisplayName(peopleClient, address);
+        table.push({ rank, displayName, address, balance });
+    }
+
+    table.sort((a, b) => b.rank - a.rank);
+    console.table(table);
 
     console.log(`Done!`);
     process.exit(0);
